@@ -11,11 +11,17 @@ export function Navbar() {
         </Link>
         <nav className="flex gap-4 sm:gap-6">
           <Link href="/explore" className="text-sm font-medium hover:underline">
-            Explore
+            楽曲を探す
           </Link>
           <SignedIn>
             <Link href="/upload" className="text-sm font-medium hover:underline">
-              Upload
+              アップロード
+            </Link>
+            <Link href="/community" className="text-sm font-medium hover:underline">
+              コミュニティ
+            </Link>
+            <Link href="/messages" className="text-sm font-medium hover:underline">
+              メッセージ
             </Link>
           </SignedIn>
         </nav>
