@@ -14,9 +14,6 @@ export function Navbar() {
             Explore
           </Link>
           <SignedIn>
-            <Link href="/dashboard" className="text-sm font-medium hover:underline">
-              Dashboard
-            </Link>
             <Link href="/upload" className="text-sm font-medium hover:underline">
               Upload
             </Link>
