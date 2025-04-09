@@ -13,6 +13,9 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    // 未使用の変数をエラーではなく警告として扱う
+    "noUnusedLocals": true /* 未使用のローカル変数に関するエラーを報告する */,
+    "noUnusedParameters": true /* 未使用のパラメータに関するエラーを報告する */,
     "plugins": [
       {
         "name": "next"
