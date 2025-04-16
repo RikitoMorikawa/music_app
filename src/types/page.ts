@@ -1,6 +1,7 @@
 // src/types/index.ts
 
-import { CollaborationStatus, SoundProductCategory, UserPlan } from "@/app/enum/page";
+import { CollaborationStatus, SoundProductCategory, UserPlan } from "./enums";
+
 
 // ユーザー関連の型定義
 export interface User {
