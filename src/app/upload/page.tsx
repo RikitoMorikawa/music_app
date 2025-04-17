@@ -26,7 +26,15 @@ export default function UploadPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      const maxSize = 20 * 1024 * 1024; // 20MB
+
+      if (file.size > maxSize) {
+        toast.error("ファイルサイズは20MB以下である必要があります");
+        return;
+      }
+
+      setSelectedFile(file);
     }
   };
 
@@ -87,55 +95,60 @@ export default function UploadPage() {
       console.log("アップロードパス:", uploadPath);
 
       // Firebase Storageにアップロード
-      const storageRef = ref(storage, uploadPath);
-      const uploadTask = uploadBytesResumable(storageRef, selectedFile);
+      // Firebase Storageにアップロード
+      if (storage) {
+        const storageRef = ref(storage, uploadPath);
+        const uploadTask = uploadBytesResumable(storageRef, selectedFile);
 
-      // アップロード進捗の監視
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          setUploadProgress(progress);
-        },
-        (error) => {
-          console.error("Firebaseアップロードエラー:", error);
-          setUploadStatus("error");
-          setUploading(false);
-          toast.error("ファイルのアップロードに失敗しました");
-        },
-        async () => {
-          try {
-            // アップロード完了、ダウンロードURLの取得
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            console.log("ファイルURL:", downloadURL);
-
-            // トラックURLを更新
-            const updateResponse = await fetch(`/api/tracks/${track.id}`, {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ audioUrl: downloadURL }),
-            });
-
-            if (!updateResponse.ok) {
-              throw new Error("トラック情報の更新に失敗しました");
-            }
-
-            setUploadStatus("success");
-            toast.success("トラックが正常にアップロードされました");
-
-            setTimeout(() => {
-              router.push("/dashboard");
-            }, 2000);
-          } catch (err) {
-            console.error("トラック更新エラー:", err);
+        // アップロード進捗の監視
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error("Firebaseアップロードエラー:", error);
             setUploadStatus("error");
-            toast.error("トラック情報の更新に失敗しました");
             setUploading(false);
+            toast.error("ファイルのアップロードに失敗しました");
+          },
+          async () => {
+            try {
+              // アップロード完了、ダウンロードURLの取得
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              console.log("ファイルURL:", downloadURL);
+
+              // トラックURLを更新
+              const updateResponse = await fetch(`/api/tracks/${track.id}`, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ audioUrl: downloadURL }),
+              });
+
+              if (!updateResponse.ok) {
+                throw new Error("トラック情報の更新に失敗しました");
+              }
+
+              setUploadStatus("success");
+              toast.success("トラックが正常にアップロードされました");
+
+              setTimeout(() => {
+                router.push("/dashboard");
+              }, 2000);
+            } catch (err) {
+              console.error("トラック更新エラー:", err);
+              setUploadStatus("error");
+              toast.error("トラック情報の更新に失敗しました");
+              setUploading(false);
+            }
           }
-        }
-      );
+        );
+      } else {
+        throw new Error("Firebaseストレージの初期化に失敗しました");
+      }
     } catch (error) {
       console.error("エラー:", error);
       setUploadStatus("error");

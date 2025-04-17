@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "api/tracks/**": {
+      "maxDuration": 60,
+      "memory": 3008
+    }
+  },
+  "routes": [
+    {
+      "source": "/api/tracks",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "POST,OPTIONS" }
+      ]
+    }
+  ]
+}

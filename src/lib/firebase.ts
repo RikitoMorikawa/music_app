@@ -23,5 +23,5 @@ export function initializeFirebaseApp(): FirebaseApp | undefined {
 // Firebaseアプリのインスタンス
 export const app = initializeFirebaseApp();
 
-// Storageの取得
-export const storage = app ? getStorage(app) : undefined;
+// Storageの取得（nullチェックを追加）
+export const storage = app ? getStorage(app) : null;
