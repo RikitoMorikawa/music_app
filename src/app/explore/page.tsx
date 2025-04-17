@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { SearchIcon, PlayCircle, PauseCircle } from "lucide-react";
 import { Track } from "@/types/explore/page";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { initializeFirebaseApp } from "@/lib/firebase"; // Firebaseの初期化関数を作成
 
 export default function ExplorePage() {
   const [search, setSearch] = useState("");
@@ -13,6 +15,11 @@ export default function ExplorePage() {
   const [currentTrack, setCurrentTrack] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Firebaseアプリの初期化
+  useEffect(() => {
+    initializeFirebaseApp();
+  }, []);
 
   useEffect(() => {
     // Fetch tracks from your API
@@ -23,10 +30,25 @@ export default function ExplorePage() {
           throw new Error("トラックの取得に失敗しました");
         }
         const data: Track[] = await res.json();
-        setTracks(data);
+
+        // Firebase Storageからダウンロード可能なURLを取得
+        const storage = getStorage();
+        const tracksWithUrls = await Promise.all(
+          data.map(async (track) => {
+            try {
+              const audioRef = ref(storage, track.audioUrl);
+              const downloadUrl = await getDownloadURL(audioRef);
+              return { ...track, audioUrl: downloadUrl };
+            } catch (urlError) {
+              console.error(`URLの取得に失敗: ${track.audioUrl}`, urlError);
+              return track;
+            }
+          })
+        );
+
+        setTracks(tracksWithUrls);
       } catch (error) {
         console.error("トラック取得エラー:", error);
-        // エラー処理を行う（例：エラーメッセージを表示する）
       }
     };
 
@@ -49,15 +71,30 @@ export default function ExplorePage() {
 
   useEffect(() => {
     if (currentTrack) {
+      // 既存のオーディオを停止
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+
+      // 新しいオーディオ要素を作成
       audioRef.current = new Audio(currentTrack);
-      audioRef.current.play();
-      audioRef.current.addEventListener("ended", () => {
-        setIsPlaying(false);
+      audioRef.current.play().catch((error) => {
+        console.error("再生エラー:", error);
       });
+
+      const audioElement = audioRef.current;
+      const endedHandler = () => {
+        setIsPlaying(false);
+      };
+
+      audioElement.addEventListener("ended", endedHandler);
+
+      return () => {
+        audioElement.removeEventListener("ended", endedHandler);
+        audioElement.pause();
+      };
     }
-    return () => {
-      audioRef.current?.pause();
-    };
   }, [currentTrack]);
 
   return (

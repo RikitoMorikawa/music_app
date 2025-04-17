@@ -1,20 +1,20 @@
-// src/lib/firebase.ts
-import { initializeApp, getApps } from "firebase/app";
-import { getStorage } from "firebase/storage";
+import { initializeApp } from "firebase/app";
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-};
+export function initializeFirebaseApp() {
+  const firebaseConfig = {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  };
 
-// Firebaseが初期化されていなければ初期化する
-const firebaseApps = getApps();
-const app = !firebaseApps.length ? initializeApp(firebaseConfig) : firebaseApps[0];
-const storage = getStorage(app);
+  // すでに初期化されている場合は再初期化しない
+  if (!firebaseConfig.apiKey) {
+    console.warn("Firebase設定が見つかりません");
+    return null;
+  }
 
-export { storage };
+  return initializeApp(firebaseConfig);
+}
