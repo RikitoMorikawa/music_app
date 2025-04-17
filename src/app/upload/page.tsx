@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UploadCloud, CheckCircle, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storage } from "@/lib/firebase";
 
 export default function UploadPage() {
   const [uploading, setUploading] = useState(false);
@@ -60,58 +62,89 @@ export default function UploadPage() {
     setUploading(true);
     setUploadProgress(0);
 
-    // アップロード進捗をシミュレート
-    const progressInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return prev;
-        }
-        return prev + 10;
-      });
-    }, 300);
-
     try {
-      // FormDataを作成してファイルとメタデータを追加
+      // FormDataを作成
       const formData = new FormData();
       formData.append("title", title);
       formData.append("genre", genre);
       formData.append("description", description);
       formData.append("audioFile", selectedFile);
 
-      // APIエンドポイントにPOST
+      // サーバー側APIを呼び出し
       const response = await fetch("/api/tracks", {
         method: "POST",
         body: formData,
       });
 
-      clearInterval(progressInterval);
-
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "アップロードに失敗しました");
+        const errorText = await response.text();
+        console.error("サーバーエラー:", errorText);
+        throw new Error(`サーバーエラー (${response.status}): ${errorText.substring(0, 100)}...`);
       }
 
-      // 成功
-      setUploadProgress(100);
-      setUploadStatus("success");
+      const { track, uploadPath } = await response.json();
+      console.log("トラック保存成功:", track);
+      console.log("アップロードパス:", uploadPath);
 
-      toast.success("トラックが正常にアップロードされました");
+      // Firebase Storageにアップロード
+      const storageRef = ref(storage, uploadPath);
+      const uploadTask = uploadBytesResumable(storageRef, selectedFile);
 
-      // 3秒後にダッシュボードに移動
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 3000);
+      // アップロード進捗の監視
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          setUploadProgress(progress);
+        },
+        (error) => {
+          console.error("Firebaseアップロードエラー:", error);
+          setUploadStatus("error");
+          setUploading(false);
+          toast.error("ファイルのアップロードに失敗しました");
+        },
+        async () => {
+          try {
+            // アップロード完了、ダウンロードURLの取得
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            console.log("ファイルURL:", downloadURL);
+
+            // トラックURLを更新
+            const updateResponse = await fetch(`/api/tracks/${track.id}`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ audioUrl: downloadURL }),
+            });
+
+            if (!updateResponse.ok) {
+              throw new Error("トラック情報の更新に失敗しました");
+            }
+
+            setUploadStatus("success");
+            toast.success("トラックが正常にアップロードされました");
+
+            setTimeout(() => {
+              router.push("/dashboard");
+            }, 2000);
+          } catch (err) {
+            console.error("トラック更新エラー:", err);
+            setUploadStatus("error");
+            toast.error("トラック情報の更新に失敗しました");
+            setUploading(false);
+          }
+        }
+      );
     } catch (error) {
-      clearInterval(progressInterval);
+      console.error("エラー:", error);
       setUploadStatus("error");
-
-      toast.error(error instanceof Error ? error.message : "アップロードに失敗しました");
-
       setUploading(false);
+      toast.error(error instanceof Error ? error.message : "アップロードに失敗しました");
     }
   };
 
+  // レンダリング部分は変更なし（省略）
   return (
     <div className="container py-8 mx-auto px-4">
       <Card className="max-w-2xl mx-auto border-2">
@@ -120,6 +153,7 @@ export default function UploadPage() {
         </CardHeader>
         <CardContent className="pt-6">
           <form onSubmit={handleUpload} className="space-y-6">
+            {/* フォーム内容は変更なし */}
             <div className="space-y-2">
               <label htmlFor="track-title" className="text-sm font-medium block">
                 トラックタイトル<span className="text-red-500">*</span>
