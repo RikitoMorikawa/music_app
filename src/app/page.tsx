@@ -79,6 +79,7 @@ export default async function Home() {
             <p className="text-muted-foreground max-w-[700px]">MusicCollabのパワフルな機能を活用して、音楽制作の可能性を広げましょう</p>
           </div>
 
+
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {/* カード1 */}
             <div className="group relative bg-card hover:bg-card/80 border border-border rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
