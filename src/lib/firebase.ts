@@ -1,4 +1,4 @@
-import { initializeApp, FirebaseApp } from "firebase/app";
+import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -10,18 +10,13 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Firebaseアプリの初期化関数
-export function initializeFirebaseApp(): FirebaseApp | undefined {
-  if (!firebaseConfig.apiKey) {
-    console.warn("Firebase設定が見つかりません");
-    return undefined;
-  }
-
-  return initializeApp(firebaseConfig);
+// 環境変数のチェックを追加
+if (!firebaseConfig.apiKey) {
+  console.warn("Firebase設定が見つかりません。環境変数を確認してください。");
 }
 
-// Firebaseアプリのインスタンス
-export const app = initializeFirebaseApp();
+// Firebaseアプリの初期化
+export const app = initializeApp(firebaseConfig);
 
-// Storageの取得（nullチェックを追加）
-export const storage = app ? getStorage(app) : null;
+// Storageの取得
+export const storage = getStorage(app);

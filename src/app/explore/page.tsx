@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { SearchIcon, PlayCircle, PauseCircle } from "lucide-react";
 import { Track } from "@/types/explore/page";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
-import { initializeFirebaseApp } from "@/lib/firebase";
+import { toast } from "sonner";
 
 export default function ExplorePage() {
   const [search, setSearch] = useState("");
@@ -16,39 +15,42 @@ export default function ExplorePage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Firebaseアプリの初期化
-  useEffect(() => {
-    initializeFirebaseApp();
-  }, []);
-
   useEffect(() => {
     // Fetch tracks from your API
     const fetchTracks = async () => {
       try {
         const res = await fetch("/api/explore");
+
+        // レスポンスの詳細なエラーハンドリング
         if (!res.ok) {
-          throw new Error("トラックの取得に失敗しました");
+          const errorText = await res.text();
+          console.error("サーバーレスポンスエラー:", res.status, errorText);
+
+          // エラーに応じて適切なトーストメッセージを表示
+          if (res.status === 404) {
+            toast.error("エンドポイントが見つかりません");
+          } else if (res.status === 500) {
+            toast.error("サーバー内部エラーが発生しました");
+          } else {
+            toast.error(`トラックの取得に失敗しました (${res.status})`);
+          }
+
+          throw new Error(`サーバーエラー: ${res.status}`);
         }
+
         const data: Track[] = await res.json();
 
-        // Firebase Storageからダウンロード可能なURLを取得
-        const storage = getStorage();
-        const tracksWithUrls = await Promise.all(
-          data.map(async (track) => {
-            try {
-              const audioRef = ref(storage, track.audioUrl);
-              const downloadUrl = await getDownloadURL(audioRef);
-              return { ...track, audioUrl: downloadUrl };
-            } catch (urlError) {
-              console.error(`URLの取得に失敗: ${track.audioUrl}`, urlError);
-              return track;
-            }
-          })
-        );
+        // データの検証
+        if (!Array.isArray(data)) {
+          throw new Error("無効なデータ形式");
+        }
 
-        setTracks(tracksWithUrls);
+        console.log("取得したトラック:", data);
+        setTracks(data);
       } catch (error) {
         console.error("トラック取得エラー:", error);
+        toast.error("トラックの読み込みに失敗しました");
+        setTracks([]); // エラー時は空の配列をセット
       }
     };
 
