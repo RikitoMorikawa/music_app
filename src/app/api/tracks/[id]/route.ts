@@ -3,14 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerAuth } from "@/lib/auth/getServerAuth";
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: { params: { id: string } }) {
   try {
     const authUser = await getServerAuth();
     if (!authUser) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = context.params;
     const { audioUrl } = await request.json();
 
     // トラックが存在し、ユーザーが所有者であることを確認
