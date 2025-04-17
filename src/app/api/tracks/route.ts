@@ -5,7 +5,7 @@ import { getServerAuth } from "@/lib/auth/getServerAuth";
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: "20mb", // サイズ制限を20MBに引き上げ
+      sizeLimit: "20mb", // サイズ制限を20MBに引き上げe
     },
   },
 };
