@@ -21,6 +21,7 @@ model User {
 model Track {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
+  genre       String?
   description String?
   audioUrl    String
   imageUrl    String?
