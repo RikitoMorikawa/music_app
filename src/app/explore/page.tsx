@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { SearchIcon, PlayCircle, PauseCircle } from "lucide-react";
 import { Track } from "@/types/explore/page";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
-import { initializeFirebaseApp } from "@/lib/firebase"; // Firebaseの初期化関数を作成
+import { initializeFirebaseApp } from "@/lib/firebase";
 
 export default function ExplorePage() {
   const [search, setSearch] = useState("");
@@ -55,6 +55,7 @@ export default function ExplorePage() {
     fetchTracks();
   }, []);
 
+  // 以下のコードは以前と同じ
   const togglePlay = (track: Track) => {
     if (currentTrack === track.audioUrl) {
       if (isPlaying) {

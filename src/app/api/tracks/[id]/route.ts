@@ -1,4 +1,3 @@
-// src/app/api/tracks/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerAuth } from "@/lib/auth/getServerAuth";
