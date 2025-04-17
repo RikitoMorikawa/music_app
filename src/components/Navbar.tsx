@@ -3,13 +3,26 @@
 import { useUser, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { Menu, Music2, Upload, Users, MessageSquare, Compass, Bell, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
 
 export function Navbar() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
+  // スクロール検出用のリスナー設定
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // ログイン状態の変化を検出
   useEffect(() => {
     if (isLoaded) {
       if (isSignedIn) {
@@ -20,103 +33,174 @@ export function Navbar() {
     }
   }, [isLoaded, isSignedIn, user]);
 
+  // メニューを開いたときに背景スクロールを防止
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   return (
-    <header className="w-full bg-background border-b border-border">
+    <header
+      className={`sticky top-0 w-full bg-background/80 backdrop-blur-md z-50 transition-all duration-300 ${
+        isScrolled ? "shadow-sm border-b border-border" : ""
+      }`}
+    >
       <div className="container flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
-        <Link href="/" className="flex items-center space-x-2">
-          <span className="text-primary">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M9 18V5l12-2v13"></path>
-              <circle cx="6" cy="18" r="3"></circle>
-              <circle cx="18" cy="16" r="3"></circle>
-            </svg>
+        <Link href="/" className="flex items-center space-x-2 group">
+          <span className="text-primary bg-primary/10 p-2 rounded-full transition-colors group-hover:bg-primary/20">
+            <Music2 className="h-5 w-5" />
           </span>
-          <h2 className="text-xl font-bold tracking-tighter sm:text-2xl">MusicCollab</h2>
+          <h2 className="text-xl font-bold tracking-tighter sm:text-2xl group-hover:text-primary transition-colors">MusicCollab</h2>
         </Link>
+
         <div className="flex items-center space-x-2 md:space-x-4">
-          <nav className="hidden md:flex space-x-4">
+          <nav className="hidden md:flex items-center space-x-1">
             <SignedIn>
-              <Link href="/upload" className="text-sm font-medium hover:underline">
+              {/* デスクトップ用ナビゲーション（ログイン時） */}
+              <Link href="/upload" className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors">
+                <Upload className="h-4 w-4 mr-2" />
                 アップロード
               </Link>
-              <Link href="/match" className="text-sm font-medium hover:underline">
+              <Link href="/match" className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors">
+                <Users className="h-4 w-4 mr-2" />
                 マッチング
               </Link>
-              <Link href="/community" className="text-sm font-medium hover:underline">
+              <Link href="/community" className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors">
+                <Users className="h-4 w-4 mr-2" />
                 コミュニティ
               </Link>
-              <Link href="/messages" className="text-sm font-medium hover:underline">
-                メッセージ
+              <Link href="/messages" className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                <span className="relative">
+                  メッセージ
+                  <Badge className="absolute -top-2 -right-6 px-1 py-0 text-[10px] bg-primary">3</Badge>
+                </span>
               </Link>
             </SignedIn>
-            <Link href="/explore" className="text-sm font-medium hover:underline">
+
+            {/* どちらの状態でも表示されるリンク */}
+            <Link href="/explore" className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors">
+              <Compass className="h-4 w-4 mr-2" />
               楽曲を探す
             </Link>
           </nav>
+
+          {/* 未ログイン時のCTAボタン */}
           <SignedOut>
             <div className="hidden md:flex items-center space-x-2">
-              <Button asChild variant="outline" size="sm">
-                <Link href="/sign-in">Sign In</Link>
+              <Button asChild variant="outline" size="sm" className="px-4">
+                <Link href="/sign-in">ログイン</Link>
               </Button>
-              <Button asChild size="sm">
-                <Link href="/sign-up">Sign Up</Link>
+              <Button asChild size="sm" className="px-4 bg-primary hover:bg-primary/90">
+                <Link href="/sign-up">登録する</Link>
               </Button>
             </div>
           </SignedOut>
+
+          {/* ログイン時のユーザーアイコン */}
           <SignedIn>
-            <UserButton afterSignOutUrl="/" />
+            <div className="flex items-center space-x-2">
+              <button className="relative p-2 rounded-full hover:bg-muted transition-colors">
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
+              </button>
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "border border-border hover:border-primary transition-colors",
+                  },
+                }}
+              />
+            </div>
           </SignedIn>
+
+          {/* モバイルメニューボタン */}
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background md:hidden"
+            className="inline-flex items-center justify-center p-2 rounded-md hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
             onClick={() => setIsOpen(!isOpen)}
+            aria-expanded={isOpen}
           >
-            <Menu className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <span className="sr-only">{isOpen ? "メニューを閉じる" : "メニューを開く"}</span>
           </button>
         </div>
       </div>
+
+      {/* モバイルメニュー */}
       {isOpen && (
-        <div className="border-t border-border px-6 py-4 md:hidden">
-          <nav className="flex flex-col space-y-2 text-center">
-            <SignedIn>
-              <Link href="/upload" className="text-sm font-medium hover:underline">
-                アップロード
-              </Link>
-              <Link href="/match" className="text-sm font-medium hover:underline">
-                マッチング
-              </Link>
-              <Link href="/community" className="text-sm font-medium hover:underline">
-                コミュニティ
-              </Link>
-              <Link href="/messages" className="text-sm font-medium hover:underline">
-                メッセージ
-              </Link>
-            </SignedIn>
-            <Link href="/explore" className="text-sm font-medium hover:underline">
-              楽曲を探す
-            </Link>
-            <SignedOut>
-              <div className="flex flex-col space-y-2">
-                <Link href="/sign-in" className="text-sm underline">
-                  Sign In
+        <div className="fixed inset-0 top-[56px] bg-background/95 backdrop-blur-sm z-40 md:hidden overflow-y-auto">
+          <div className="container px-4 py-6">
+            <nav className="flex flex-col space-y-4">
+              <SignedIn>
+                <Link
+                  href="/upload"
+                  className="flex items-center px-4 py-3 text-lg font-medium rounded-md hover:bg-muted transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Upload className="h-5 w-5 mr-3" />
+                  アップロード
                 </Link>
-                <Link href="/sign-up" className="text-sm underline">
-                  Sign Up
+                <Link
+                  href="/match"
+                  className="flex items-center px-4 py-3 text-lg font-medium rounded-md hover:bg-muted transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Users className="h-5 w-5 mr-3" />
+                  マッチング
                 </Link>
-              </div>
-            </SignedOut>
-          </nav>
+                <Link
+                  href="/community"
+                  className="flex items-center px-4 py-3 text-lg font-medium rounded-md hover:bg-muted transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Users className="h-5 w-5 mr-3" />
+                  コミュニティ
+                </Link>
+                <Link
+                  href="/messages"
+                  className="flex items-center px-4 py-3 text-lg font-medium rounded-md hover:bg-muted transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <MessageSquare className="h-5 w-5 mr-3" />
+                  <span className="relative">
+                    メッセージ
+                    <Badge className="absolute -top-2 -right-6 px-1 py-0 text-[10px] bg-primary">3</Badge>
+                  </span>
+                </Link>
+              </SignedIn>
+              <Link
+                href="/explore"
+                className="flex items-center px-4 py-3 text-lg font-medium rounded-md hover:bg-muted transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                <Compass className="h-5 w-5 mr-3" />
+                楽曲を探す
+              </Link>
+
+              <SignedOut>
+                <div className="flex flex-col space-y-3 mt-4 pt-4 border-t border-border">
+                  <Button asChild variant="outline" size="lg" className="w-full">
+                    <Link href="/sign-in" onClick={() => setIsOpen(false)}>
+                      ログイン
+                    </Link>
+                  </Button>
+                  <Button asChild size="lg" className="w-full">
+                    <Link href="/sign-up" onClick={() => setIsOpen(false)}>
+                      アカウント登録
+                    </Link>
+                  </Button>
+                </div>
+              </SignedOut>
+            </nav>
+          </div>
         </div>
       )}
     </header>

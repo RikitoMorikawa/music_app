@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { SearchIcon, PlayCircle, Heart } from "lucide-react";
-import Image from "next/image";
 
 export default function ExplorePage() {
   const [search, setSearch] = useState("");
@@ -48,13 +47,6 @@ export default function ExplorePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Image
-                  src={track.coverUrl}
-                  alt={track.title}
-                  width={300}
-                  height={192} // 高さを計算: 48px × 4 = 192px
-                  className="w-full h-48 object-cover rounded-md mb-4"
-                />
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">{track.artist}</span>
                   <span className="text-sm text-muted-foreground">{track.genre}</span>

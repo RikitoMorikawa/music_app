@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, MessageSquare } from "lucide-react";
-import Image from "next/image";
 
 export default function CommunityPage() {
   // Mock data
@@ -40,13 +39,6 @@ export default function CommunityPage() {
               {communities.map((community) => (
                 <Card key={community.id}>
                   <CardHeader>
-                    <Image
-                      src={community.image}
-                      alt={community.name}
-                      width={300}
-                      height={192} // 高さを計算: 48px × 4 = 192px
-                      className="w-full h-48 object-cover rounded-md"
-                    />
                   </CardHeader>
                   <CardContent>
                     <CardTitle className="mb-4">{community.name}</CardTitle>
