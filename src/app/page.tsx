@@ -3,7 +3,6 @@ import { Music2Icon, UsersIcon, MessageSquareIcon, LayersIcon, ArrowRightIcon, P
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 
 export default async function Home() {
@@ -160,7 +159,6 @@ export default async function Home() {
             <div className="bg-card border border-border rounded-xl overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
               <div className="relative h-48 w-full bg-muted">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image src="/placeholder-track.jpg" alt="トラックのカバー画像" fill className="object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Button size="icon" variant="ghost" className="rounded-full bg-background/80 h-12 w-12">
                       <PlayIcon className="h-6 w-6" />
@@ -187,7 +185,6 @@ export default async function Home() {
             <div className="bg-card border border-border rounded-xl overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
               <div className="relative h-48 w-full bg-muted">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image src="/placeholder-track.jpg" alt="トラックのカバー画像" fill className="object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Button size="icon" variant="ghost" className="rounded-full bg-background/80 h-12 w-12">
                       <PlayIcon className="h-6 w-6" />
@@ -214,7 +211,6 @@ export default async function Home() {
             <div className="bg-card border border-border rounded-xl overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
               <div className="relative h-48 w-full bg-muted">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Image src="/placeholder-track.jpg" alt="トラックのカバー画像" fill className="object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Button size="icon" variant="ghost" className="rounded-full bg-background/80 h-12 w-12">
                       <PlayIcon className="h-6 w-6" />
