@@ -146,8 +146,9 @@ export default function UploadPage() {
 
   // レンダリング部分は変更なし（省略）
   return (
-    <div className="container py-8 mx-auto px-4">
-      <Card className="max-w-2xl mx-auto border-2">
+  <div className="w-full py-8 bg-gradient-to-b from-primary/20 via-primary/5 to-background">
+    <div className="container mx-auto px-4">
+      <Card className="max-w-2xl mx-auto border border-border rounded-xl overflow-hidden transition-all">
         <CardHeader className="pb-4 border-b">
           <CardTitle className="text-2xl font-bold">新しいトラックをアップロード</CardTitle>
         </CardHeader>
@@ -279,6 +280,7 @@ export default function UploadPage() {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

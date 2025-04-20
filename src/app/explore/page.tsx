@@ -114,7 +114,7 @@ export default function ExplorePage() {
   // 現在の再生時間が変わるたびに進捗率を更新
   useEffect(() => {
     calculateProgress();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTime, currentTrackId]);
 
   useEffect(() => {
@@ -246,82 +246,86 @@ export default function ExplorePage() {
   );
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl">
-      <div className="flex flex-col space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Input placeholder="サンプルを検索..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-72" />
-            <Button>
-              <SearchIcon className="h-4 w-4 mr-2" />
-              検索
+    <div className="w-full py-8 bg-gradient-to-b from-primary/20 via-primary/5 to-background">
+      <div className="container mx-auto py-8 max-w-4xl">
+        <div className="flex flex-col space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Input placeholder="サンプルを検索..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-72" />
+              <Button>
+                <SearchIcon className="h-4 w-4 mr-2" />
+                検索
+              </Button>
+            </div>
+            <Button variant="outline">
+              <ArrowUpDown className="h-4 w-4 mr-2" />
+              並び替え
             </Button>
           </div>
-          <Button variant="outline">
-            <ArrowUpDown className="h-4 w-4 mr-2" />
-            並び替え
-          </Button>
-        </div>
 
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin h-8 w-8 border-4 border-primary rounded-full border-t-transparent"></div>
-          </div>
-        ) : (
-          <div className="bg-card rounded-md shadow">
-            {filteredTracks.length > 0 ? (
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-3 w-8"></th>
-                    <th className="text-left p-3">ファイル名</th>
-                    <th className="text-right p-3">時間</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTracks.map((track) => (
-                    <tr key={track.id} className="border-b hover:bg-muted/50 cursor-pointer transition-colors" onClick={(e) => togglePlay(track, e)}>
-                      <td className="p-3">
-                        <button
-                          className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-primary/10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            togglePlay(track);
-                          }}
-                        >
-                          {currentTrack === track.audioUrl && isPlaying ? <PauseCircle className="h-5 w-5" /> : <PlayCircle className="h-5 w-5" />}
-                        </button>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex flex-col space-y-2">
-                          <p className="font-medium">{track.title}</p>
-
-                          {/* プログレスバー（シークバー機能付き） */}
-                          <div
-                            ref={(el) => {progressBarRefs.current[track.id] = el}}
-                            className="h-1.5 w-full bg-muted rounded-full overflow-hidden cursor-pointer"
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin h-8 w-8 border-4 border-primary rounded-full border-t-transparent"></div>
+            </div>
+          ) : (
+            <div className="bg-card rounded-md shadow">
+              {filteredTracks.length > 0 ? (
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-3 w-8"></th>
+                      <th className="text-left p-3">ファイル名</th>
+                      <th className="text-right p-3">時間</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTracks.map((track) => (
+                      <tr key={track.id} className="border-b hover:bg-muted/50 cursor-pointer transition-colors" onClick={(e) => togglePlay(track, e)}>
+                        <td className="p-3">
+                          <button
+                            className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-primary/10"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleSeek(track.id, e);
+                              togglePlay(track);
                             }}
                           >
-                            {currentTrackId === track.id && (
-                              <div className="h-full bg-primary transition-all duration-100" style={{ width: `${progressPercentage}%` }} />
-                            )}
+                            {currentTrack === track.audioUrl && isPlaying ? <PauseCircle className="h-5 w-5" /> : <PlayCircle className="h-5 w-5" />}
+                          </button>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex flex-col space-y-2">
+                            <p className="font-medium">{track.title}</p>
+
+                            {/* プログレスバー（シークバー機能付き） */}
+                            <div
+                              ref={(el) => {
+                                progressBarRefs.current[track.id] = el;
+                              }}
+                              className="h-1.5 w-full bg-muted rounded-full overflow-hidden cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSeek(track.id, e);
+                              }}
+                            >
+                              {currentTrackId === track.id && (
+                                <div className="h-full bg-primary transition-all duration-100" style={{ width: `${progressPercentage}%` }} />
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-3 text-right text-muted-foreground">
-                        {currentTrackId === track.id && isPlaying ? formatTime(currentTime) : formatTime(totalDurations[track.id] || 0)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="py-12 text-center text-muted-foreground">{search ? "検索結果が見つかりませんでした" : "トラックがありません"}</div>
-            )}
-          </div>
-        )}
+                        </td>
+                        <td className="p-3 text-right text-muted-foreground">
+                          {currentTrackId === track.id && isPlaying ? formatTime(currentTime) : formatTime(totalDurations[track.id] || 0)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="py-12 text-center text-muted-foreground">{search ? "検索結果が見つかりませんでした" : "トラックがありません"}</div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
