@@ -1,3 +1,4 @@
+// Navbar.tsxの修正版
 "use client";
 
 import { useUser, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
@@ -51,7 +52,8 @@ export function Navbar() {
         isScrolled ? "shadow-sm border-b border-border" : ""
       }`}
     >
-      <div className="container flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
+      {/* max-w-7xlを追加してコンテンツの最大幅を設定、mx-autoで中央寄せ */}
+      <div className="container max-w-7xl mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
         <Link href="/" className="flex items-center space-x-2 group">
           <span className="text-primary bg-primary/10 p-2 rounded-full transition-colors group-hover:bg-primary/20">
             <Music2 className="h-5 w-5" />
@@ -134,10 +136,10 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* モバイルメニュー */}
+      {/* モバイルメニュー - こちらも中央寄せに調整 */}
       {isOpen && (
         <div className="fixed inset-0 top-[56px] bg-background/95 backdrop-blur-sm z-40 md:hidden overflow-y-auto">
-          <div className="container px-4 py-6">
+          <div className="container max-w-7xl mx-auto px-4 py-6">
             <nav className="flex flex-col space-y-4">
               <SignedIn>
                 <Link

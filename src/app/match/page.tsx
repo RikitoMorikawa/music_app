@@ -1,215 +1,73 @@
 "use client";
 
-import { useState } from "react";
-import { Music2Icon, UsersIcon, Filter, Star, ArrowRightIcon, SearchIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { UsersIcon, Filter, Star, ArrowRightIcon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import Link from "next/link";
-import Image from "next/image";
-import { Musician, Project } from "@/types/page";
+import { Musician } from "@/types/page";
 
 export default function MatchingPage() {
-  const [selectedTab, setSelectedTab] = useState<"musicians" | "projects">("musicians");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [matchingCredits, setMatchingCredits] = useState(5);
-  console.log(setMatchingCredits);
   const [matchThreshold, setMatchThreshold] = useState([70]);
   const [skillFilter, setSkillFilter] = useState<string[]>([]);
   const [genreFilter, setGenreFilter] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [musicians, setMusicians] = useState<Musician[]>([]);
 
-  // デモ用のミュージシャンデータ
-  const musicianMatches: Musician[] = [
-    {
-      id: "user1",
-      name: "田中 誠",
-      username: "makoto_music",
-      avatarUrl: "/placeholder-avatar.jpg",
-      primaryRole: "ボーカリスト",
-      skills: ["ボーカル", "作詞", "ピアノ"],
-      genres: ["J-Pop", "R&B"],
-      bio: "東京を拠点に活動する情熱的なシンガーソングライター。心に響くメロディと詩を追求しています。",
-      matchScore: 95,
-      isPremium: true,
-      recentWork: "「星空のメロディ」シングルリリース",
-    },
-    {
-      id: "user2",
-      name: "佐藤 健太",
-      username: "kenta_guitar",
-      avatarUrl: "/placeholder-avatar.jpg",
-      primaryRole: "ギタリスト",
-      skills: ["ギター", "作曲", "編曲"],
-      genres: ["ロック", "フュージョン"],
-      bio: "10年以上のギター演奏経験。バンド活動と並行してセッションミュージシャンとしても活動中。",
-      matchScore: 87,
-      isPremium: false,
-      recentWork: "インディーバンド「Blue Horizon」のギターレコーディング",
-    },
-    {
-      id: "user3",
-      name: "山本 美咲",
-      username: "misaki_beats",
-      avatarUrl: "/placeholder-avatar.jpg",
-      primaryRole: "ビートメーカー",
-      skills: ["ビートメイキング", "DTM", "ミキシング"],
-      genres: ["ヒップホップ", "エレクトロニック"],
-      bio: "独自のサウンドスケープを創り出すことに情熱を持つプロデューサー。様々なアーティストとコラボ中。",
-      matchScore: 82,
-      isPremium: true,
-      recentWork: "楽曲「Urban Nights」プロデュース",
-    },
-    {
-      id: "user4",
-      name: "鈴木 拓也",
-      username: "takuya_drums",
-      avatarUrl: "/placeholder-avatar.jpg",
-      primaryRole: "ドラマー",
-      skills: ["ドラム", "パーカッション", "リズムプログラミング"],
-      genres: ["ジャズ", "ファンク", "フュージョン"],
-      bio: "グルーヴ感あふれるプレイが特徴のドラマー。様々なジャンルに対応できる柔軟性が強み。",
-      matchScore: 78,
-      isPremium: false,
-      recentWork: "ジャズトリオでのライブパフォーマンス",
-    },
-    {
-      id: "user5",
-      name: "伊藤 明日香",
-      username: "asuka_violin",
-      avatarUrl: "/placeholder-avatar.jpg",
-      primaryRole: "バイオリニスト",
-      skills: ["バイオリン", "弦楽アレンジ", "作曲"],
-      genres: ["クラシック", "ポップ", "映画音楽"],
-      bio: "クラシックの訓練を受けつつ、様々なジャンルの音楽にクロスオーバーする多才なバイオリニスト。",
-      matchScore: 73,
-      isPremium: false,
-      recentWork: "インディーアーティスト楽曲への弦楽セクション提供",
-    },
-    {
-      id: "user6",
-      name: "小林 直人",
-      username: "naoto_bass",
-      avatarUrl: "/placeholder-avatar.jpg",
-      primaryRole: "ベーシスト",
-      skills: ["ベース", "編曲", "音楽理論"],
-      genres: ["ファンク", "ジャズ", "R&B"],
-      bio: "しっかりとしたグルーヴと音楽理論の知識を併せ持つベーシスト。バンド活動の他、レコーディングにも参加。",
-      matchScore: 68,
-      isPremium: true,
-      recentWork: "スタジオミュージシャンとしてアルバム参加",
-    },
-  ];
+  // MongoDB/Prismaからのユーザーデータ取得
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("/api/users");
+        const data = await response.json();
 
-  // デモ用のプロジェクトデータ
-  const projectMatches: Project[] = [
-    {
-      id: "proj1",
-      title: "J-Popシングルのボーカリスト募集",
-      creator: "Cosmic Productions",
-      creatorAvatar: "/placeholder-avatar.jpg",
-      description: "夏リリース予定のアップテンポなJ-Popシングル曲のメインボーカリストを探しています。明るく伸びのある声質の方を希望。曲のデモ音源あり。",
-      needs: ["ボーカル", "メロディアレンジ"],
-      genres: ["J-Pop"],
-      deadline: "2025年5月末",
-      remote: true,
-      isPremium: true,
-      matchScore: 92,
-    },
-    {
-      id: "proj2",
-      title: "インディーロックバンド メンバー募集",
-      creator: "Taro Yamada",
-      creatorAvatar: "/placeholder-avatar.jpg",
-      description:
-        "オリジナル曲を中心に活動するインディーロックバンドの立ち上げメンバーを募集。具体的にはドラマーとキーボード奏者を探しています。定期的なリハーサルと月1回程度のライブ活動を予定。",
-      needs: ["ドラム", "キーボード"],
-      genres: ["インディーロック", "オルタナティブ"],
-      deadline: "募集中",
-      remote: false,
-      location: "東京",
-      isPremium: false,
-      matchScore: 85,
-    },
-    {
-      id: "proj3",
-      title: "ヒップホップトラック用ビートメイカー",
-      creator: "MC Akira",
-      creatorAvatar: "/placeholder-avatar.jpg",
-      description:
-        "次回アルバム用のオリジナルビート制作パートナーを探しています。90年代のオールドスクールヒップホップからインスピレーションを得たサウンドを希望。",
-      needs: ["ビートメイキング", "サンプリング", "ミキシング"],
-      genres: ["ヒップホップ", "ローファイ"],
-      deadline: "2025年6月",
-      remote: true,
-      isPremium: true,
-      matchScore: 88,
-    },
-    {
-      id: "proj4",
-      title: "アコースティックアルバムの弦楽器奏者募集",
-      creator: "Hana Music Collective",
-      creatorAvatar: "/placeholder-avatar.jpg",
-      description: "フォークミュージックをベースにしたアコースティックアルバムのレコーディング参加者を募集。特にバイオリン、チェロ、ビオラ奏者を探しています。",
-      needs: ["バイオリン", "チェロ", "弦楽器"],
-      genres: ["フォーク", "アコースティック"],
-      deadline: "2025年4月",
-      remote: true,
-      isPremium: false,
-      matchScore: 81,
-    },
-    {
-      id: "proj5",
-      title: "ビデオゲーム用サウンドトラック制作",
-      creator: "Pixel Dreams Studio",
-      creatorAvatar: "/placeholder-avatar.jpg",
-      description: "開発中のインディーゲーム用のサウンドトラック制作者を探しています。8bitやchiptune要素を含む現代的な電子音楽スタイルを希望。",
-      needs: ["作曲", "サウンドデザイン", "ゲーム音楽"],
-      genres: ["エレクトロニック", "チップチューン"],
-      deadline: "2025年7月",
-      remote: true,
-      isPremium: true,
-      matchScore: 77,
-    },
-  ];
+        // DBから取得したユーザーデータをミュージシャンデータに変換
+        type APIUser = {
+          id?: string;
+          _id?: string;
+          name?: string;
+          username?: string;
+          imageUrl?: string;
+          clerkId: string;
+        };
 
-  // スキルオプション（デモ用）
-  const skillOptions = [
-    "ボーカル",
-    "ギター",
-    "ベース",
-    "ドラム",
-    "キーボード",
-    "ピアノ",
-    "バイオリン",
-    "作曲",
-    "編曲",
-    "作詞",
-    "DTM",
-    "ミキシング",
-    "マスタリング",
-    "ビートメイキング",
-    "DJ",
-    "サウンドデザイン",
-  ];
+        const mappedMusicians = data.map((user: APIUser) => ({
+          id: user.id || user._id, // Prismaはidをそのまま返す可能性がある
+          name: user.name || "ユーザー名未設定",
+          username: user.username || user.clerkId.substring(0, 10),
+          avatarUrl: user.imageUrl || "/placeholder-avatar.jpg",
+          primaryRole: "アーティスト", // デフォルト値
+          skills: ["DTM", "作曲"], // デフォルト値
+          genres: ["J-Pop"], // デフォルト値
+          bio: "プロフィール文が未設定です。", // デフォルト値
+          matchScore: Math.floor(Math.random() * 30) + 70, // ランダム値
+          isPremium: Math.random() > 0.7, // ランダム値
+          recentWork: "最近の活動情報なし", // デフォルト値
+        }));
 
-  // ジャンルオプション（デモ用）
-  const genreOptions = [
-    "J-Pop",
-    "ロック",
-    "ヒップホップ",
-    "R&B",
-    "エレクトロニック",
-    "ジャズ",
-    "クラシック",
-    "フォーク",
-    "メタル",
-    "インディー",
-    "アンビエント",
-    "ブルース",
-  ];
+        setMusicians(mappedMusicians);
+      } catch (error) {
+        console.error("ユーザーデータの取得に失敗しました:", error);
+        // エラー時は空の配列を設定
+        setMusicians([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // スキルオプション
+  const skillOptions = ["ボーカル", "ギター", "ベース", "ドラム", "キーボード", "ピアノ", "バイオリン", "作曲", "編曲", "作詞"];
+
+  // ジャンルオプション
+  const genreOptions = ["J-Pop", "ロック", "ヒップホップ", "R&B", "エレクトロニック", "ジャズ", "クラシック", "フォーク"];
 
   const toggleSkillFilter = (skill: string) => {
     if (skillFilter.includes(skill)) {
@@ -240,14 +98,11 @@ export default function MatchingPage() {
     }, 1000);
   };
 
-  // 現在選択されているタブに基づいたタイトルを表示（変数を使用して警告を解消）
-  const currentTabTitle = selectedTab === "musicians" ? "ミュージシャン一覧" : "プロジェクト募集";
-
   return (
     <div className="flex flex-col items-center">
       {/* ヘッダーセクション */}
       <section className="w-full py-12 bg-gradient-to-b from-primary/10 to-background">
-        <div className="container px-4 md:px-6">
+        <div className="container max-w-[1440px] mx-auto px-6 md:px-10">
           <div className="flex flex-col items-center space-y-4 text-center">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">あなたの理想の音楽パートナーを見つけよう</h1>
             <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">AIがあなたのスキルや好みに合った最適なコラボレーターを提案します</p>
@@ -266,10 +121,7 @@ export default function MatchingPage() {
 
       {/* メインコンテンツセクション */}
       <section className="w-full py-8 bg-background">
-        <div className="container px-4 md:px-6">
-          {/* 現在のタブを表示（変数を使用して警告を解消） */}
-          <h2 className="sr-only">{currentTabTitle}</h2>
-
+        <div className="container max-w-[1440px] mx-auto px-6 md:px-10">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* フィルターサイドバー */}
             <div className="w-full lg:w-1/4 space-y-6">
@@ -312,7 +164,7 @@ export default function MatchingPage() {
                   <div>
                     <label className="text-sm mb-2 block">スキル</label>
                     <div className="flex flex-wrap gap-1">
-                      {skillOptions.slice(0, 10).map((skill) => (
+                      {skillOptions.map((skill) => (
                         <Badge
                           key={skill}
                           variant={skillFilter.includes(skill) ? "default" : "outline"}
@@ -331,9 +183,6 @@ export default function MatchingPage() {
                           {skill}
                         </Badge>
                       ))}
-                      <Badge variant="outline" className="cursor-pointer" tabIndex={0} role="button">
-                        その他...
-                      </Badge>
                     </div>
                   </div>
 
@@ -341,7 +190,7 @@ export default function MatchingPage() {
                   <div>
                     <label className="text-sm mb-2 block">ジャンル</label>
                     <div className="flex flex-wrap gap-1">
-                      {genreOptions.slice(0, 8).map((genre) => (
+                      {genreOptions.map((genre) => (
                         <Badge
                           key={genre}
                           variant={genreFilter.includes(genre) ? "default" : "outline"}
@@ -360,9 +209,6 @@ export default function MatchingPage() {
                           {genre}
                         </Badge>
                       ))}
-                      <Badge variant="outline" className="cursor-pointer" tabIndex={0} role="button">
-                        その他...
-                      </Badge>
                     </div>
                   </div>
 
@@ -405,221 +251,105 @@ export default function MatchingPage() {
               </div>
             </div>
 
-            {/* マッチングリストエリア */}
+            {/* ミュージシャンリストエリア */}
             <div className="w-full lg:w-3/4">
-              <Tabs defaultValue="musicians" className="w-full" onValueChange={(value) => setSelectedTab(value as "musicians" | "projects")}>
-                <TabsList className="w-full mb-6">
-                  <TabsTrigger value="musicians" className="w-1/2">
-                    <UsersIcon className="h-4 w-4 mr-2" />
-                    ミュージシャン
-                  </TabsTrigger>
-                  <TabsTrigger value="projects" className="w-1/2">
-                    <Music2Icon className="h-4 w-4 mr-2" />
-                    プロジェクト
-                  </TabsTrigger>
-                </TabsList>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold flex items-center">
+                  <UsersIcon className="h-5 w-5 mr-2" />
+                  ミュージシャン一覧
+                </h2>
+              </div>
 
-                {/* ミュージシャンタブコンテンツ */}
-                <TabsContent value="musicians" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {musicianMatches.map((match, index) => (
-                      <Card key={match.id} className="overflow-hidden hover:border-primary/50 transition-colors">
-                        <CardContent className="p-6">
-                          <div className="flex gap-4">
-                            <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex-shrink-0 relative">
-                              <Image
-                                src={match.avatarUrl}
-                                alt={`${match.name}のプロフィール画像`}
-                                fill
-                                sizes="(max-width: 768px) 64px, 64px"
-                                className="object-cover"
-                                priority={index < 4}
-                              />
-                            </div>
-
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h3 className="font-semibold">{match.name}</h3>
-                                  <p className="text-sm text-muted-foreground">@{match.username}</p>
-                                </div>
-                                <div className="flex items-center">
-                                  <Badge className={`${match.matchScore >= 85 ? "bg-green-600" : match.matchScore >= 70 ? "bg-amber-500" : "bg-muted"}`}>
-                                    {match.matchScore}% マッチ
-                                  </Badge>
-                                  {match.isPremium && (
-                                    <Badge variant="outline" className="ml-1 border-amber-500 text-amber-500">
-                                      <Star className="h-3 w-3 mr-1 fill-amber-500" />
-                                      Premium
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="mt-2">
-                                <p className="text-sm font-medium">{match.primaryRole}</p>
-                              </div>
-
-                              <div className="mt-3">
-                                <div className="flex flex-wrap gap-1 mb-2">
-                                  {match.skills.slice(0, 3).map((skill) => (
-                                    <Badge key={skill} variant="secondary" className="text-xs">
-                                      {skill}
-                                    </Badge>
-                                  ))}
-                                </div>
-                                <div className="flex flex-wrap gap-1">
-                                  {match.genres.slice(0, 2).map((genre) => (
-                                    <Badge key={genre} variant="outline" className="text-xs">
-                                      {genre}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <p className="text-sm mt-3 line-clamp-2">{match.bio}</p>
-
-                              <div className="mt-3 text-xs text-muted-foreground">
-                                <span>最近の活動:</span> {match.recentWork}
-                              </div>
-                            </div>
+              {isLoading ? (
+                <div className="flex justify-center items-center p-12">
+                  <p className="text-muted-foreground">読み込み中...</p>
+                </div>
+              ) : musicians.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {musicians.map((match, index) => (
+                    <Card key={index} className="overflow-hidden hover:border-primary/50 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex gap-4">
+                          <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex-shrink-0 relative">
+                            <img src={match.avatarUrl} alt={`${match.name}のプロフィール画像`} className="w-full h-full object-cover" />
                           </div>
-                        </CardContent>
 
-                        <CardFooter className="bg-muted/20 p-3">
-                          <div className="w-full flex justify-between gap-2">
-                            <Button variant="outline" size="sm" asChild className="flex-1">
-                              <Link href={`/profile/${match.username}`}>プロフィール</Link>
-                            </Button>
-                            <Button size="sm" className="flex-1" disabled={matchingCredits <= 0}>
-                              コンタクト {matchingCredits > 0 ? "(1クレジット)" : "(クレジット不足)"}
-                            </Button>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-center">
-                    <Button variant="outline" onClick={loadMoreData} disabled={isLoading}>
-                      {isLoading ? "読み込み中..." : "もっと見る"}
-                      {!isLoading && <ArrowRightIcon className="ml-2 h-4 w-4" />}
-                    </Button>
-                  </div>
-                </TabsContent>
-
-                {/* プロジェクトタブコンテンツ */}
-                <TabsContent value="projects" className="space-y-6">
-                  <div className="grid grid-cols-1 gap-4">
-                    {projectMatches.map((project, index) => (
-                      <Card key={project.id} className="overflow-hidden hover:border-primary/50 transition-colors">
-                        <CardContent className="p-6">
-                          <div className="flex flex-col md:flex-row gap-4">
-                            <div className="md:w-2/3">
-                              <div className="flex justify-between items-start">
-                                <h3 className="font-semibold text-lg">{project.title}</h3>
-                                <div className="flex items-center">
-                                  <Badge className={`${project.matchScore >= 85 ? "bg-green-600" : project.matchScore >= 70 ? "bg-amber-500" : "bg-muted"}`}>
-                                    {project.matchScore}% マッチ
-                                  </Badge>
-                                  {project.isPremium && (
-                                    <Badge variant="outline" className="ml-1 border-amber-500 text-amber-500">
-                                      <Star className="h-3 w-3 mr-1 fill-amber-500" />
-                                      Premium
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="flex items-center mt-2">
-                                <div className="w-6 h-6 rounded-full overflow-hidden bg-muted flex-shrink-0 mr-2 relative">
-                                  <Image src={project.creatorAvatar} alt={project.creator} fill sizes="24px" className="object-cover" priority={index < 4} />
-                                </div>
-                                <span className="text-sm">{project.creator}</span>
-                              </div>
-
-                              <p className="text-sm mt-3">{project.description}</p>
-                            </div>
-
-                            <div className="md:w-1/3 flex flex-col justify-between space-y-3">
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start">
                               <div>
-                                <h4 className="text-sm font-medium mb-1">求めているスキル</h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {project.needs.map((need) => (
-                                    <Badge key={need} variant="secondary" className="text-xs">
-                                      {need}
-                                    </Badge>
-                                  ))}
-                                </div>
+                                <h3 className="font-semibold">{match.name}</h3>
+                                <p className="text-sm text-muted-foreground">@{match.username}</p>
                               </div>
-
-                              <div>
-                                <h4 className="text-sm font-medium mb-1">ジャンル</h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {project.genres.map((genre) => (
-                                    <Badge key={genre} variant="outline" className="text-xs">
-                                      {genre}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div className="flex flex-col gap-1">
-                                <div className="flex items-center text-sm">
-                                  <span className="text-muted-foreground mr-2">期限:</span>
-                                  {project.deadline}
-                                </div>
-                                <div className="flex items-center text-sm">
-                                  <span className="text-muted-foreground mr-2">場所:</span>
-                                  {project.remote ? "リモート可" : project.location}
-                                </div>
+                              <div className="flex items-center">
+                                <Badge className={`${match.matchScore >= 85 ? "bg-green-600" : match.matchScore >= 70 ? "bg-amber-500" : "bg-muted"}`}>
+                                  {match.matchScore}% マッチ
+                                </Badge>
+                                {match.isPremium && (
+                                  <Badge variant="outline" className="ml-1 border-amber-500 text-amber-500">
+                                    <Star className="h-3 w-3 mr-1 fill-amber-500" />
+                                    Premium
+                                  </Badge>
+                                )}
                               </div>
                             </div>
+
+                            <div className="mt-2">
+                              <p className="text-sm font-medium">{match.primaryRole}</p>
+                            </div>
+
+                            <div className="mt-3">
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                {match.skills.slice(0, 3).map((skill, i) => (
+                                  <Badge key={`${match.id}-skill-${i}`} variant="secondary" className="text-xs">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {match.genres.slice(0, 2).map((genre, i) => (
+                                  <Badge key={`${match.id}-genre-${i}`} variant="outline" className="text-xs">
+                                    {genre}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+
+                            <p className="text-sm mt-3 line-clamp-2">{match.bio}</p>
+
+                            <div className="mt-3 text-xs text-muted-foreground">
+                              <span>最近の活動:</span> {match.recentWork}
+                            </div>
                           </div>
-                        </CardContent>
+                        </div>
+                      </CardContent>
 
-                        <CardFooter className="bg-muted/20 p-3">
-                          <div className="w-full flex justify-between gap-2">
-                            <Button variant="outline" size="sm" asChild className="flex-1">
-                              <Link href={`/projects/${project.id}`}>詳細を見る</Link>
-                            </Button>
-                            <Button size="sm" className="flex-1" disabled={matchingCredits <= 0}>
-                              応募する {matchingCredits > 0 ? "(1クレジット)" : "(クレジット不足)"}
-                            </Button>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    ))}
-                  </div>
+                      <CardFooter className="bg-muted/20 p-3">
+                        <div className="w-full flex justify-between gap-2">
+                          <Button variant="outline" size="sm" asChild className="flex-1">
+                            <Link href={`/profile/${match.username}`}>プロフィール</Link>
+                          </Button>
+                          <Button size="sm" className="flex-1" disabled={matchingCredits <= 0}>
+                            コンタクト {matchingCredits > 0 ? "(1クレジット)" : "(クレジット不足)"}
+                          </Button>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex justify-center items-center p-12 bg-muted/20 rounded-lg">
+                  <p className="text-muted-foreground">表示できるミュージシャンがいません。</p>
+                </div>
+              )}
 
-                  <div className="flex justify-center">
-                    <Button variant="outline" onClick={loadMoreData} disabled={isLoading}>
-                      {isLoading ? "読み込み中..." : "もっと見る"}
-                      {!isLoading && <ArrowRightIcon className="ml-2 h-4 w-4" />}
-                    </Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 下部のCTAセクション */}
-      <section className="w-full py-12 bg-primary/5 mt-8">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center space-y-4 text-center">
-            <h2 className="text-2xl font-bold">最適な音楽パートナーが見つからない？</h2>
-            <p className="mx-auto max-w-[600px] text-muted-foreground">
-              プロフィールを充実させると、あなたにぴったりのマッチング精度が向上します。 また、プロジェクトを作成して人材を募集することもできます。
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 mt-2">
-              <Button asChild>
-                <Link href="/profile/edit">プロフィールを編集</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/projects/create">プロジェクトを作成</Link>
-              </Button>
+              {musicians.length > 0 && (
+                <div className="flex justify-center mt-6">
+                  <Button variant="outline" onClick={loadMoreData} disabled={isLoading}>
+                    {isLoading ? "読み込み中..." : "もっと見る"}
+                    {!isLoading && <ArrowRightIcon className="ml-2 h-4 w-4" />}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -28,8 +28,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container px-4 py-8 md:px-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="w-full py-8 bg-gradient-to-b from-primary/20 via-primary/5 to-background">
+      <div className="container mx-auto py-8 max-w-4xl">
         <div>
           <h1 className="text-3xl font-bold">Your Dashboard</h1>
           {user && <p className="text-muted-foreground mt-2">ようこそ、{user.name || user.username}さん</p>}
