@@ -1,12 +1,13 @@
 // Navbar.tsxの修正版
 "use client";
 
-import { useUser, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { useUser, SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Menu, Music2, Upload, Users, MessageSquare, Compass, Bell, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
+import { CustomUserButton } from "./CustomUserButton";
 
 export function Navbar() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -73,10 +74,6 @@ export function Navbar() {
                 <Users className="h-4 w-4 mr-2" />
                 マッチング
               </Link>
-              <Link href="/community" className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors">
-                <Users className="h-4 w-4 mr-2" />
-                コミュニティ
-              </Link>
               <Link href="/messages" className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors">
                 <MessageSquare className="h-4 w-4 mr-2" />
                 <span className="relative">
@@ -112,14 +109,7 @@ export function Navbar() {
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
               </button>
-              <UserButton
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "border border-border hover:border-primary transition-colors",
-                  },
-                }}
-              />
+              <CustomUserButton />
             </div>
           </SignedIn>
 
