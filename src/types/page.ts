@@ -11,7 +11,6 @@ export interface User {
   name: string | null;
   email: string;
   bio: string | null;
-  imageUrl: string | null;
   skills: string[];
   genres: string[];
   experienceYears?: number;

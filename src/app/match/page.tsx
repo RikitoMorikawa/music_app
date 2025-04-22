@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import Link from "next/link";
 import { Musician } from "@/types/page";
+import { useUser } from "@clerk/nextjs";
+// import { useAuth } from "@/hooks/useAuth";
 
 export default function MatchingPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -18,6 +20,10 @@ export default function MatchingPage() {
   const [genreFilter, setGenreFilter] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [musicians, setMusicians] = useState<Musician[]>([]);
+  console.log("Clerk");
+  const { user: clerkUser } = useUser();
+  console.log("MongoDB");
+  // const { userData } = useAuth();
 
   // MongoDB/Prismaからのユーザーデータ取得
   useEffect(() => {
@@ -36,11 +42,11 @@ export default function MatchingPage() {
           clerkId: string;
         };
 
-        const mappedMusicians = data.map((user: APIUser) => ({
-          id: user.id || user._id, // Prismaはidをそのまま返す可能性がある
-          name: user.name || "ユーザー名未設定",
-          username: user.username || user.clerkId.substring(0, 10),
-          avatarUrl: user.imageUrl || "/placeholder-avatar.jpg",
+        const mappedMusicians = data.map((userData: APIUser) => ({
+          id: userData.id || userData._id, // Prismaはidをそのまま返す可能性がある
+          name: userData.name || "ユーザー名未設定",
+          username: userData.username || userData.clerkId.substring(0, 10),
+          avatarUrl: clerkUser?.imageUrl || "/placeholder-avatar.jpg",
           primaryRole: "アーティスト", // デフォルト値
           skills: ["DTM", "作曲"], // デフォルト値
           genres: ["J-Pop"], // デフォルト値
@@ -277,8 +283,7 @@ export default function MatchingPage() {
                           <div className="flex-1">
                             <div className="flex justify-between items-start">
                               <div>
-                                <h3 className="font-semibold">{match.name}</h3>
-                                <p className="text-sm text-muted-foreground">@{match.username}</p>
+                                <p className="text-sm ">@{match.username}</p>
                               </div>
                               <div className="flex items-center">
                                 <Badge className={`${match.matchScore >= 85 ? "bg-green-600" : match.matchScore >= 70 ? "bg-amber-500" : "bg-muted"}`}>

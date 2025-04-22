@@ -8,7 +8,7 @@ import type { AuthUser } from "@/lib/auth/getServerAuth";
 
 export function useAuth() {
   const { isSignedIn: clerkIsSignedIn, isLoaded: clerkIsLoaded } = useUser();
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [userData, setUserData] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export function useAuth() {
         setIsLoading(true);
         fetchAuth()
           .then((userData) => {
-            setUser(userData);
+            setUserData(userData);
           })
           .catch((error) => {
             console.error("Failed to fetch user data:", error);
@@ -26,15 +26,15 @@ export function useAuth() {
             setIsLoading(false);
           });
       } else {
-        setUser(null);
+        setUserData(null);
         setIsLoading(false);
       }
     }
   }, [clerkIsSignedIn, clerkIsLoaded]);
 
   return {
-    user,
+    userData,
     isLoading,
-    isSignedIn: !!user,
+    isSignedIn: !!setUserData,
   };
 }

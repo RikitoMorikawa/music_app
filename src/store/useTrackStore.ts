@@ -4,7 +4,6 @@ interface Track {
   id: string;
   title: string;
   audioUrl: string;
-  imageUrl?: string;
 }
 
 interface TrackStore {
