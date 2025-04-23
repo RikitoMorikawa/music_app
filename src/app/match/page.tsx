@@ -24,7 +24,7 @@ export default function MatchingPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("/api/users");
+        const response = await fetch("/api/auth/users");
         const data = await response.json();
 
         // DBから取得したユーザーデータをフィルタリング
