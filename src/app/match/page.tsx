@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect } from "react";
 import { UsersIcon, Filter, Star, ArrowRightIcon, SearchIcon } from "lucide-react";
@@ -54,7 +55,7 @@ export default function MatchingPage() {
     };
 
     fetchUsers();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // スキルオプション
@@ -285,7 +286,7 @@ export default function MatchingPage() {
                       <CardFooter className="bg-muted/20 p-3">
                         <div className="w-full flex justify-between gap-2">
                           <Button variant="outline" size="sm" asChild className="flex-1">
-                            <Link href={`/profile/${match.username}`}>プロフィール</Link>
+                            <Link href={`/profiles/${match.id}`}>プロフィール</Link>
                           </Button>
                           <Button size="sm" className="flex-1" disabled={matchingCredits <= 0}>
                             コンタクト {matchingCredits > 0 ? "(1クレジット)" : "(クレジット不足)"}
