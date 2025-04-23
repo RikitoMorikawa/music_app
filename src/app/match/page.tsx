@@ -6,23 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
 import Link from "next/link";
 import { Musician } from "@/types/page";
-// import { useUser } from "@clerk/nextjs";
-// import { useAuth } from "@/hooks/useAuth";
 
 export default function MatchingPage() {
   const [matchingCredits] = useState(5);
-  const [matchThreshold, setMatchThreshold] = useState([70]);
   const [skillFilter, setSkillFilter] = useState<string[]>([]);
   const [genreFilter, setGenreFilter] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [musicians, setMusicians] = useState<Musician[]>([]);
   console.log("Clerk");
-  // const { user: clerkUser } = useUser();
   console.log("MongoDB");
-  // const { userData } = useAuth();
 
   // MongoDB/Prismaからのユーザーデータ取得
   useEffect(() => {
@@ -58,7 +52,6 @@ export default function MatchingPage() {
           genres: userData.otherGenres || [],
           bio: userData.bio || "プロフィール文が未設定です。",
           location: userData.location || "未設定",
-          matchScore: Math.floor(Math.random() * 30) + 70, // ランダム値
           isPremium: Math.random() > 0.7, // ランダム値
           recentWork: "最近の活動情報なし", // デフォルト値
         }));
@@ -157,23 +150,6 @@ export default function MatchingPage() {
                     </div>
                   </div>
 
-                  {/* マッチングスコアスライダー */}
-                  <div>
-                    <label htmlFor="match-threshold" className="text-sm mb-1 block">
-                      マッチングスコア: {matchThreshold}%以上
-                    </label>
-                    <Slider
-                      id="match-threshold"
-                      value={matchThreshold}
-                      min={0}
-                      max={100}
-                      step={5}
-                      onValueChange={setMatchThreshold}
-                      className="py-4"
-                      aria-label="マッチングスコアの閾値"
-                    />
-                  </div>
-
                   {/* スキルフィルター */}
                   <div>
                     <label className="text-sm mb-2 block">スキル</label>
@@ -233,7 +209,6 @@ export default function MatchingPage() {
                     onClick={() => {
                       setSkillFilter([]);
                       setGenreFilter([]);
-                      setMatchThreshold([70]);
                     }}
                   >
                     フィルターをリセット
@@ -281,9 +256,6 @@ export default function MatchingPage() {
                                 <p className="text-sm md:text-base font-bold">{match.username}</p>
                               </div>
                               <div className="flex items-center">
-                                <Badge className={`${match.matchScore >= 85 ? "bg-green-600" : match.matchScore >= 70 ? "bg-amber-500" : "bg-muted"}`}>
-                                  {match.matchScore}% マッチ
-                                </Badge>
                                 {match.isPremium && (
                                   <Badge variant="outline" className="ml-1 border-amber-500 text-amber-500">
                                     <Star className="h-3 w-3 mr-1 fill-amber-500" />
