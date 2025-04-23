@@ -27,14 +27,15 @@ model User {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   tracks               Track[]
+  sentMessages         Message[] // 追加
 }
 
 model Track {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
   title            String
   description      String?
   audioUrl         String
-  userId           String   @db.ObjectId
+  userId           String    @db.ObjectId
   genre            String?
   bpm              Int?
   key              String?
@@ -42,7 +43,31 @@ model Track {
   instrumentalType String?
   recordLabel      String?
   releaseDate      DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// チャット機能のためのモデル
+model Conversation {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  participantIds String[]  @db.ObjectId // 参加者のユーザーID配列
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastMessageAt DateTime?
+  status        String    @default("active") // active, archived, etc
+  creditUsed    Boolean   @default(true)     // クレジットを使用したかどうか
+  messages      Message[]
+}
+
+model Message {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String       @db.ObjectId
+  senderId       String       @db.ObjectId
+  content        String
+  createdAt      DateTime     @default(now())
+  readAt         DateTime?    // 既読日時
+  // リレーション
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id])
 }

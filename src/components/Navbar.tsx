@@ -8,9 +8,11 @@ import { Menu, Music2, Upload, Users, MessageSquare, Compass, Bell, X } from "lu
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { CustomUserButton } from "./CustomUserButton";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Navbar() {
   const { isLoaded, isSignedIn, user } = useUser();
+  const { userData } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -28,12 +30,13 @@ export function Navbar() {
   useEffect(() => {
     if (isLoaded) {
       if (isSignedIn) {
-        console.log("ユーザーがログインしました:", user);
+        console.log("ユーザーがログインしましたClerk:", user);
+        console.log("ユーザーがログインしました:Mongo", userData);
       } else {
         console.log("ユーザーがログアウトしました");
       }
     }
-  }, [isLoaded, isSignedIn, user]);
+  }, [isLoaded, isSignedIn, user, userData]);
 
   // メニューを開いたときに背景スクロールを防止
   useEffect(() => {

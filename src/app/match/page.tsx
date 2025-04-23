@@ -69,12 +69,40 @@ export default function MatchingPage() {
   };
 
   // OKボタンクリック時の処理
-  const handleConfirmContact = () => {
-    // クレジットの消費処理などをここに追加できます
+  const handleConfirmContact = async () => {
+    if (!selectedUser) return;
 
-    // 確認後にメッセージページに遷移
-    setIsDialogOpen(false);
-    router.push("/messages");
+    try {
+      // チャットを作成するAPI呼び出し
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          targetUserId: selectedUser.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "会話の作成に失敗しました");
+      }
+
+      const data = await response.json();
+      console.log("会話作成成功:", data);
+
+      // クレジットの消費処理などをここに追加できます
+      // ...
+
+      // ダイアログを閉じてメッセージページに遷移
+      setIsDialogOpen(false);
+      router.push("/messages");
+    } catch (error) {
+      console.error("コンタクトエラー:", error);
+      // エラー処理
+      // エラーメッセージを表示するなど
+    }
   };
 
   // キャンセルボタンクリック時の処理
@@ -237,16 +265,6 @@ export default function MatchingPage() {
                     フィルターをリセット
                   </Button>
                 </div>
-              </div>
-
-              <div className="bg-primary/5 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2">マッチングを最適化</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  プレミアムユーザーにアップグレードすると、より多くのマッチングと高度なフィルタリングオプションが利用できます。
-                </p>
-                <Button className="w-full" asChild>
-                  <Link href="/pricing">プランを見る</Link>
-                </Button>
               </div>
             </div>
 
