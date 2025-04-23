@@ -11,11 +11,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export default function UploadPage() {
   const [uploading, setUploading] = useState(false);
@@ -28,7 +23,6 @@ export default function UploadPage() {
   const [mood, setMood] = useState("");
   const [instrumentalType, setInstrumentalType] = useState("");
   const [recordLabel, setRecordLabel] = useState("");
-  const [releaseDate, setReleaseDate] = useState<Date | undefined>();
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle");
@@ -86,10 +80,7 @@ export default function UploadPage() {
       formData.append("mood", mood);
       formData.append("instrumentalType", instrumentalType);
       formData.append("recordLabel", recordLabel);
-      if (releaseDate) {
-        formData.append("releaseDate", releaseDate.toISOString());
-      }
-
+      
       // サーバー側APIを呼び出し
       const response = await fetch("/api/tracks", {
         method: "POST",
@@ -283,21 +274,6 @@ export default function UploadPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium block">レコードレーベル</label>
                   <Input placeholder="レーベル名" value={recordLabel} onChange={(e) => setRecordLabel(e.target.value)} disabled={uploading} />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">リリース日</label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !releaseDate && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {releaseDate ? format(releaseDate, "PPP") : <span>リリース日を選択</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar mode="single" selected={releaseDate} onSelect={setReleaseDate} initialFocus />
-                    </PopoverContent>
-                  </Popover>
                 </div>
               </div>
 
