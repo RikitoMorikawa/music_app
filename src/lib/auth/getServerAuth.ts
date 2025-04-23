@@ -7,6 +7,8 @@ export type AuthUser = {
   clerkId: string;
   username: string;
   name?: string;
+  imageUrl?: string;
+  emailAddress?: string;
   isSignedIn: boolean;
 };
 
@@ -38,6 +40,8 @@ export async function getServerAuth(): Promise<AuthUser | null> {
         clerkId: userId,
         username: clerkUser.username || `user_${userId.substring(0, 8)}`,
         name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
+        imageUrl: clerkUser.imageUrl,
+        emailAddress: clerkUser.emailAddresses?.[0]?.emailAddress,
       },
     });
 
@@ -46,6 +50,8 @@ export async function getServerAuth(): Promise<AuthUser | null> {
       clerkId: newUser.clerkId,
       username: newUser.username,
       name: newUser.name || undefined,
+      imageUrl: newUser.imageUrl || undefined,
+      emailAddress: newUser.emailAddress || undefined,
       isSignedIn: true,
     };
   }
@@ -55,6 +61,8 @@ export async function getServerAuth(): Promise<AuthUser | null> {
     clerkId: dbUser.clerkId,
     username: dbUser.username,
     name: dbUser.name || undefined,
+    imageUrl: dbUser.imageUrl || undefined,
+    emailAddress: dbUser.emailAddress || undefined,
     isSignedIn: true,
   };
 }

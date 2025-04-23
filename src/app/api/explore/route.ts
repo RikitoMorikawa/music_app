@@ -1,3 +1,4 @@
+// src / app / api / explore / route.ts;
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -46,7 +47,8 @@ export async function GET() {
     // トラックが存在しない場合の処理
     if (tracks.length === 0) {
       console.warn("トラックが見つかりませんでした");
-      return NextResponse.json([], { status: 204 }); // No Content
+      // 204 ではなく 200 を返して空配列を返す
+      return NextResponse.json([]);
     }
 
     return NextResponse.json(tracks);

@@ -9,19 +9,18 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import Link from "next/link";
 import { Musician } from "@/types/page";
-import { useUser } from "@clerk/nextjs";
+// import { useUser } from "@clerk/nextjs";
 // import { useAuth } from "@/hooks/useAuth";
 
 export default function MatchingPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [matchingCredits, setMatchingCredits] = useState(5);
+  const [matchingCredits] = useState(5);
   const [matchThreshold, setMatchThreshold] = useState([70]);
   const [skillFilter, setSkillFilter] = useState<string[]>([]);
   const [genreFilter, setGenreFilter] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [musicians, setMusicians] = useState<Musician[]>([]);
   console.log("Clerk");
-  const { user: clerkUser } = useUser();
+  // const { user: clerkUser } = useUser();
   console.log("MongoDB");
   // const { userData } = useAuth();
 
@@ -36,21 +35,29 @@ export default function MatchingPage() {
         type APIUser = {
           id?: string;
           _id?: string;
-          name?: string;
           username?: string;
           imageUrl?: string;
           clerkId: string;
+          bio?: string;
+          location?: string;
+          primaryInstrument?: string;
+          secondaryInstruments?: string[];
+          primaryGenre?: string;
+          otherGenres?: string[];
+          experienceLevel?: string;
+          influences?: string;
+          lookingFor?: string;
         };
 
         const mappedMusicians = data.map((userData: APIUser) => ({
           id: userData.id || userData._id, // Prismaはidをそのまま返す可能性がある
-          name: userData.name || "ユーザー名未設定",
           username: userData.username || userData.clerkId.substring(0, 10),
-          avatarUrl: clerkUser?.imageUrl || "/placeholder-avatar.jpg",
-          primaryRole: "アーティスト", // デフォルト値
-          skills: ["DTM", "作曲"], // デフォルト値
-          genres: ["J-Pop"], // デフォルト値
-          bio: "プロフィール文が未設定です。", // デフォルト値
+          avatarUrl: userData?.imageUrl || "/profile_icon.png",
+          primaryRole: userData.primaryInstrument || "楽器未設定",
+          skills: userData.secondaryInstruments || [],
+          genres: userData.otherGenres || [],
+          bio: userData.bio || "プロフィール文が未設定です。",
+          location: userData.location || "未設定",
           matchScore: Math.floor(Math.random() * 30) + 70, // ランダム値
           isPremium: Math.random() > 0.7, // ランダム値
           recentWork: "最近の活動情報なし", // デフォルト値
@@ -67,6 +74,7 @@ export default function MatchingPage() {
     };
 
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // スキルオプション
@@ -218,19 +226,6 @@ export default function MatchingPage() {
                     </div>
                   </div>
 
-                  {/* リモート/オンサイトフィルター */}
-                  <div>
-                    <label className="text-sm mb-2 block">活動タイプ</label>
-                    <div className="flex gap-2">
-                      <Badge variant="outline" className="cursor-pointer" tabIndex={0} role="button">
-                        リモート可
-                      </Badge>
-                      <Badge variant="outline" className="cursor-pointer" tabIndex={0} role="button">
-                        対面のみ
-                      </Badge>
-                    </div>
-                  </div>
-
                   <Button
                     variant="outline"
                     size="sm"
@@ -283,7 +278,7 @@ export default function MatchingPage() {
                           <div className="flex-1">
                             <div className="flex justify-between items-start">
                               <div>
-                                <p className="text-sm ">@{match.username}</p>
+                                <p className="text-sm md:text-base font-bold">{match.username}</p>
                               </div>
                               <div className="flex items-center">
                                 <Badge className={`${match.matchScore >= 85 ? "bg-green-600" : match.matchScore >= 70 ? "bg-amber-500" : "bg-muted"}`}>
@@ -321,8 +316,8 @@ export default function MatchingPage() {
 
                             <p className="text-sm mt-3 line-clamp-2">{match.bio}</p>
 
-                            <div className="mt-3 text-xs text-muted-foreground">
-                              <span>最近の活動:</span> {match.recentWork}
+                            <div className="mt-2 text-xs text-muted-foreground">
+                              <p>拠点: {match.location}</p>
                             </div>
                           </div>
                         </div>
@@ -346,7 +341,6 @@ export default function MatchingPage() {
                   <p className="text-muted-foreground">表示できるミュージシャンがいません。</p>
                 </div>
               )}
-
               {musicians.length > 0 && (
                 <div className="flex justify-center mt-6">
                   <Button variant="outline" onClick={loadMoreData} disabled={isLoading}>

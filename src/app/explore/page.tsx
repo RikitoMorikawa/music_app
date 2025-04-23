@@ -1,4 +1,5 @@
 "use client";
+// src / app / explore / page.tsx;
 
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";

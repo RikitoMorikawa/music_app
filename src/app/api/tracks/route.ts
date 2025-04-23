@@ -24,6 +24,14 @@ export async function POST(request: NextRequest) {
     const description = formData.get("description") as string;
     const audioFile = formData.get("audioFile") as File;
 
+    // 新しく追加したフィールド
+    const bpm = formData.get("bpm") as string;
+    const key = formData.get("key") as string;
+    const mood = formData.get("mood") as string;
+    const instrumentalType = formData.get("instrumentalType") as string;
+    const recordLabel = formData.get("recordLabel") as string;
+    const releaseDateString = formData.get("releaseDate") as string;
+
     // バリデーション
     if (!title || !audioFile) {
       return NextResponse.json({ error: "必須項目が不足しています" }, { status: 400 });
@@ -40,6 +48,14 @@ export async function POST(request: NextRequest) {
         description: description || null,
         userId: authUser.id,
         audioUrl: fileName, // ファイルパスを一時的に保存
+
+        // 新しいフィールドを追加
+        bpm: bpm ? parseInt(bpm, 10) : undefined,
+        key: key || undefined,
+        mood: mood || undefined,
+        instrumentalType: instrumentalType || undefined,
+        recordLabel: recordLabel || undefined,
+        releaseDate: releaseDateString ? new Date(releaseDateString) : undefined,
       },
     });
 

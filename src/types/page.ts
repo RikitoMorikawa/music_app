@@ -20,6 +20,8 @@ export interface User {
   credits: number;
   createdAt: Date;
   updatedAt: Date;
+  imageUrl: string | null;
+  primaryRole: string;  
 }
 
 // トラック関連の型定義
@@ -65,7 +67,7 @@ export interface Comment {
 }
 
 // マッチング関連の型定義
-export interface Musician {
+export type Musician = {
   id: string;
   name: string;
   username: string;
@@ -74,10 +76,11 @@ export interface Musician {
   skills: string[];
   genres: string[];
   bio: string;
+  location: string; // 追加
   matchScore: number;
   isPremium: boolean;
-  recentWork?: string;
-}
+  recentWork: string;
+};
 
 export interface Project {
   id: string;
