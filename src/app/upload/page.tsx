@@ -22,7 +22,6 @@ export default function UploadPage() {
   const [key, setKey] = useState("");
   const [mood, setMood] = useState("");
   const [instrumentalType, setInstrumentalType] = useState("");
-  const [recordLabel, setRecordLabel] = useState("");
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle");
@@ -79,7 +78,6 @@ export default function UploadPage() {
       formData.append("key", key);
       formData.append("mood", mood);
       formData.append("instrumentalType", instrumentalType);
-      formData.append("recordLabel", recordLabel);
       
       // サーバー側APIを呼び出し
       const response = await fetch("/api/tracks", {
@@ -267,13 +265,6 @@ export default function UploadPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">レコードレーベル</label>
-                  <Input placeholder="レーベル名" value={recordLabel} onChange={(e) => setRecordLabel(e.target.value)} disabled={uploading} />
                 </div>
               </div>
 

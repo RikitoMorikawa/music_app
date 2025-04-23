@@ -9,17 +9,21 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Musician } from "@/types/page";
-// import { useUser } from "@clerk/nextjs";
 import { APIUser } from "@/types/api/User";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import ContactConfirmDialog from "@/components/dialogs/ContactConfirmDialog";
 
 export default function MatchingPage() {
+  const router = useRouter();
   const { userData } = useAuth();
   const [matchingCredits] = useState(5);
   const [skillFilter, setSkillFilter] = useState<string[]>([]);
   const [genreFilter, setGenreFilter] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [musicians, setMusicians] = useState<Musician[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; username: string } | null>(null);
 
   // MongoDB/Prismaからのユーザーデータ取得
   useEffect(() => {
@@ -58,6 +62,27 @@ export default function MatchingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // コンタクトボタンクリック時の処理
+  const handleContactClick = (userId: string, username: string) => {
+    setSelectedUser({ id: userId, username });
+    setIsDialogOpen(true);
+  };
+
+  // OKボタンクリック時の処理
+  const handleConfirmContact = () => {
+    // クレジットの消費処理などをここに追加できます
+
+    // 確認後にメッセージページに遷移
+    setIsDialogOpen(false);
+    router.push("/messages");
+  };
+
+  // キャンセルボタンクリック時の処理
+  const handleCancelContact = () => {
+    setSelectedUser(null);
+    setIsDialogOpen(false);
+  };
+
   // スキルオプション
   const skillOptions = ["ボーカル", "ギター", "ベース", "ドラム", "キーボード", "ピアノ", "バイオリン", "作曲", "編曲", "作詞"];
 
@@ -95,6 +120,16 @@ export default function MatchingPage() {
 
   return (
     <div className="flex flex-col items-center">
+      {/* コンタクト確認ダイアログ */}
+      <ContactConfirmDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onConfirm={handleConfirmContact}
+        onCancel={handleCancelContact}
+        userName={selectedUser?.username}
+        creditCost={1}
+      />
+
       {/* ヘッダーセクション */}
       <section className="w-full py-12 bg-gradient-to-b from-primary/10 to-background">
         <div className="container max-w-[1440px] mx-auto px-6 md:px-10">
@@ -235,7 +270,7 @@ export default function MatchingPage() {
                       <CardContent className="p-6">
                         <div className="flex gap-4">
                           <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex-shrink-0 relative">
-                            <img src={match.avatarUrl} alt={`${match.name}のプロフィール画像`} className="w-full h-full object-cover" />
+                            <img src={match.avatarUrl} alt={`${match.username}のプロフィール画像`} className="w-full h-full object-cover" />
                           </div>
 
                           <div className="flex-1">
@@ -288,7 +323,8 @@ export default function MatchingPage() {
                           <Button variant="outline" size="sm" asChild className="flex-1">
                             <Link href={`/profiles/${match.id}`}>プロフィール</Link>
                           </Button>
-                          <Button size="sm" className="flex-1" disabled={matchingCredits <= 0}>
+                          {/* コンタクトボタンの修正 */}
+                          <Button size="sm" className="flex-1" disabled={matchingCredits <= 0} onClick={() => handleContactClick(match.id, match.username)}>
                             コンタクト {matchingCredits > 0 ? "(1クレジット)" : "(クレジット不足)"}
                           </Button>
                         </div>
