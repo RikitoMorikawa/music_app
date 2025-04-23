@@ -8,15 +8,17 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Musician } from "@/types/page";
+// import { useUser } from "@clerk/nextjs";
+import { APIUser } from "@/types/api/User";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function MatchingPage() {
+  const { userData } = useAuth();
   const [matchingCredits] = useState(5);
   const [skillFilter, setSkillFilter] = useState<string[]>([]);
   const [genreFilter, setGenreFilter] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [musicians, setMusicians] = useState<Musician[]>([]);
-  console.log("Clerk");
-  console.log("MongoDB");
 
   // MongoDB/Prismaからのユーザーデータ取得
   useEffect(() => {
@@ -25,26 +27,11 @@ export default function MatchingPage() {
         const response = await fetch("/api/users");
         const data = await response.json();
 
-        // DBから取得したユーザーデータをミュージシャンデータに変換
-        type APIUser = {
-          id?: string;
-          _id?: string;
-          username?: string;
-          imageUrl?: string;
-          clerkId: string;
-          bio?: string;
-          location?: string;
-          primaryInstrument?: string;
-          secondaryInstruments?: string[];
-          primaryGenre?: string;
-          otherGenres?: string[];
-          experienceLevel?: string;
-          influences?: string;
-          lookingFor?: string;
-        };
+        // DBから取得したユーザーデータをフィルタリング
+        const filteredData = data.filter((user: { id: string }) => user.id !== userData?.id);
 
-        const mappedMusicians = data.map((userData: APIUser) => ({
-          id: userData.id || userData._id, // Prismaはidをそのまま返す可能性がある
+        const mappedMusicians = filteredData.map((userData: APIUser) => ({
+          id: userData.id, // MongoDBの_id
           username: userData.username || userData.clerkId.substring(0, 10),
           avatarUrl: userData?.imageUrl || "/profile_icon.png",
           primaryRole: userData.primaryInstrument || "楽器未設定",
@@ -67,7 +54,7 @@ export default function MatchingPage() {
     };
 
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // スキルオプション

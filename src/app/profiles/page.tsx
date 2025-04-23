@@ -75,7 +75,7 @@ const experienceLevels = ["初心者", "中級者", "上級者", "プロ"];
 
 export default function ProfilePage() {
   const { user: clerkUser, isLoaded: clerkIsLoaded } = useUser();
-    console.log("###Clerk", clerkUser);
+  console.log("###Clerk", clerkUser);
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
