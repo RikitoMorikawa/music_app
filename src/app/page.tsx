@@ -1,25 +1,17 @@
-'use client';
-
 import { Button } from "@/components/ui/button";
 import { Music2Icon, UsersIcon, MessageSquareIcon, LayersIcon, ArrowRightIcon, PlayIcon, HeadphonesIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+import { currentUser } from "@clerk/nextjs/server";
 import { Badge } from "@/components/ui/badge";
-import { useEffect } from "react";
 
-export default function Home() {
-  const { user, isLoaded } = useUser();
-  const router = useRouter();
+export default async function Home() {
+  // ログインユーザーの取得
+  const user = await currentUser();
 
-  useEffect(() => {
-    if (isLoaded && user) {
-      router.replace("/dashboard");
-    }
-  }, [isLoaded, user, router]);
-
-  if (!isLoaded) {
-    return null;
+  // ログイン済みの場合はダッシュボードにリダイレクト
+  if (user) {
+    redirect("/dashboard");
   }
 
   return (
@@ -85,6 +77,7 @@ export default function Home() {
             <h2 className="text-3xl font-bold tracking-tight mb-4 text-foreground">あなたの音楽制作を次のレベルへ</h2>
             <p className="text-muted-foreground max-w-[700px]">MusicCollabのパワフルな機能を活用して、音楽制作の可能性を広げましょう</p>
           </div>
+
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {/* カード1 */}
